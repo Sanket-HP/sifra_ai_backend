@@ -1,0 +1,13 @@
+# Enforce consistent text encoding
+* text=auto
+
+# Mark common language files
+*.py linguist-language=Python
+*.yml linguist-language=YAML
+*.json linguist-language=JSON
+
+# Treat shell scripts as bash
+*.sh linguist-language=Shell
+
+# Handle UTF-8 explicitly
+*.py text eol=lf
