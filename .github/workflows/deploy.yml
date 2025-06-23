@@ -17,9 +17,8 @@ jobs:
       # Use the latest stable version of setup-python (v5 is current best practice)
       uses: actions/setup-python@v5
       with:
-        # Crucially, set the Python version to 3.11 or higher
-        # The error indicates that azure-ai-openai requires >=3.11
-        python-version: '3.11' # Or '3.12' if you prefer a newer version and it's compatible
+       
+        python-version: '3.10' 
 
     - name: Install dependencies
       run: |
