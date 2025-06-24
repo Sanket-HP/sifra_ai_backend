@@ -1,9 +1,11 @@
 # main.py
-from fastapi import FastAPI
+from fastapi import APIRouter, FastAPI
 from dotenv import load_dotenv
 import logging
 import os
 import traceback
+
+router = APIRouter()
 
 # ✅ Load environment variables from .env file
 load_dotenv()
