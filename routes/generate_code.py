@@ -1,5 +1,4 @@
 # routes/generate_code.py
-
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from utils.openai_api import generate_code
@@ -15,7 +14,7 @@ class GenerateCodeInput(BaseModel):
 
 @router.post("/generate_code_with_output")
 def generate_code_with_output(data: GenerateCodeInput):
-    print("\ud83d\udcc5 Incoming Request:", data.dict())
+    print("Incoming Request:", data.dict())
 
     gpt_prompt = (
         f"You are a data scientist. Using {data.language}, write code to load dataset "
@@ -25,10 +24,9 @@ def generate_code_with_output(data: GenerateCodeInput):
     try:
         code = generate_code(gpt_prompt, data.language)
     except Exception as e:
-        print("\u274c Code generation failed:", str(e))
+        print("❌ Code generation failed:", str(e))
         raise HTTPException(status_code=500, detail="Code generation failed. Check server logs.")
 
-    # Optional execution for Python
     if data.language.lower() == "python":
         try:
             output = io.StringIO()
@@ -41,4 +39,3 @@ def generate_code_with_output(data: GenerateCodeInput):
         program_output = "Execution supported only for Python in this version."
 
     return {"code": code, "output": program_output}
-
