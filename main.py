@@ -19,11 +19,13 @@ async def health():
 async def root():
     return {"message": "Welcome to SifraAI Backend!"}
 
-# ✅ Import & include routers
 try:
     from routes import upload, generate_code, run_code
     app.include_router(upload.router)
     app.include_router(generate_code.router)
     app.include_router(run_code.router)
+    print("✅ Routers mounted successfully.")
 except Exception as e:
-    print(f"❌ Error loading routers: {e}")
+    import traceback
+    print("❌ Error loading routers:", str(e))
+    traceback.print_exc()
