@@ -13,6 +13,7 @@ env/
 .venv/
 .env/
 .env.*  # like .env.dev or .env.local
+.env
 
 # VSCode
 .vscode/
