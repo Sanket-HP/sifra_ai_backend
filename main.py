@@ -17,7 +17,7 @@ app = FastAPI(
 def root():
     return {"message": "Welcome to SifraAI Backend"}
 
-@app.get("/health", tags=["Health"])
+@app.get("/health", status_code=200)
 def health():
     return {"status": "healthy"}
 
