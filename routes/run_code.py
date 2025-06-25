@@ -1,3 +1,4 @@
+# routes/run_code.py
 from fastapi import APIRouter
 from pydantic import BaseModel
 import io
@@ -9,7 +10,7 @@ class CodeInput(BaseModel):
     code: str
 
 @router.post("/run_code")
-def run_code(data: CodeInput):
+async def run_code(data: CodeInput):
     try:
         output = io.StringIO()
         with contextlib.redirect_stdout(output):

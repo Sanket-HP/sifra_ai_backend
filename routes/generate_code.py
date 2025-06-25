@@ -1,7 +1,7 @@
 # routes/generate_code.py
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from utils.openai_api import generate_code
+from utils.azureopenai_api import generate_code
 import io
 import contextlib
 
@@ -13,8 +13,8 @@ class GenerateCodeInput(BaseModel):
     dataset_url: str
 
 @router.post("/generate_code_with_output")
-def generate_code_with_output(data: GenerateCodeInput):
-    print("Incoming Request:", data.dict())
+async def generate_code_with_output(data: GenerateCodeInput):
+    print("📥 Incoming Request:", data.dict())
 
     gpt_prompt = (
         f"You are a data scientist. Using {data.language}, write code to load dataset "
