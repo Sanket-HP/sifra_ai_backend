@@ -1,28 +1,29 @@
-# utils/azureopenai_api.py
 import os
-from azure.ai.openai import OpenAIClient
+from openai import AzureOpenAI
 from azure.identity import DefaultAzureCredential
 
-def generate_code(prompt: str, language: str) -> str:
-    endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
-    deployment = os.getenv("AZURE_OPENAI_DEPLOYMENT_ID")
-    api_version = os.getenv("AZURE_OPENAI_API_VERSION")
 
-    if not all([endpoint, deployment, api_version]):
-        raise ValueError("❌ Missing Azure OpenAI environment variables")
+AZURE_OPENAI_ENDPOINT = os.getenv("AZURE_OPENAI_ENDPOINT")
+AZURE_OPENAI_API_KEY = os.getenv("AZURE_OPENAI_API_KEY")
+AZURE_OPENAI_API_VERSION = os.getenv("AZURE_OPENAI_API_VERSION") 
+AZURE_OPENAI_DEPLOYMENT_NAME = os.getenv("AZURE_OPENAI_DEPLOYMENT_ID")
 
-    credential = DefaultAzureCredential()
-    client = OpenAIClient(endpoint=endpoint, credential=credential)
 
+
+client = AzureOpenAI(
+    api_key=AZURE_OPENAI_API_KEY,
+    azure_endpoint=AZURE_OPENAI_ENDPOINT,
+    api_version=AZURE_OPENAI_API_VERSION
+)
+
+try:
     response = client.chat.completions.create(
-        deployment_id=deployment,
-        model="gpt-4",
-        api_version=api_version,
+        model=AZURE_OPENAI_DEPLOYMENT_NAME, # This is your deployment name, not the model name
         messages=[
-            {"role": "system", "content": "You are an expert data scientist."},
-            {"role": "user", "content": prompt}
-        ],
-        temperature=0.7
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": "Tell me a fun fact about Python programming."}
+        ]
     )
-
-    return response.choices[0].message.content
+    print(response.choices[0].message.content)
+except Exception as e:
+    print(f"An error occurred: {e}")
