@@ -1,22 +1,27 @@
-import openai
 import os
+from azure.ai.openai import OpenAIClient
+from azure.identity import DefaultAzureCredential
 
-openai.api_key = os.getenv("AZURE_OPENAI_API_KEY")
-openai.api_base = os.getenv("AZURE_OPENAI_ENDPOINT")
-openai.api_type = "azure"
-openai.api_version = "2025-01-01-preview"
+def generate_code(prompt: str, language: str) -> str:
+    # Example logic — modify based on your setup
+    endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
+    deployment = os.getenv("AZURE_OPENAI_DEPLOYMENT_ID")
+    api_version = os.getenv("AZURE_OPENAI_API_VERSION")
 
-deployment_id = os.getenv("AZURE_OPENAI_DEPLOYMENT_ID")
+    if not all([endpoint, deployment, api_version]):
+        raise ValueError("Missing Azure OpenAI environment variables")
 
-def generate_code(prompt, language):
-    response = openai.ChatCompletion.create(
-        deployment_id=deployment_id,
+    credential = DefaultAzureCredential()
+    client = OpenAIClient(endpoint=endpoint, credential=credential)
+
+    response = client.chat.completions.create(
+        deployment_id=deployment,
         model="gpt-4",
         messages=[
-            {"role": "system", "content": f"You are an expert {language} data scientist."},
+            {"role": "system", "content": "You are an expert data scientist."},
             {"role": "user", "content": prompt}
         ],
-        temperature=0.5,
-        max_tokens=800
+        temperature=0.7
     )
-    return response["choices"][0]["message"]["content"]
+
+    return response.choices[0].message.content
