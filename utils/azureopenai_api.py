@@ -1,31 +1,25 @@
-# utils/azureopenai_api.py
+from azure.ai.openai import OpenAIClient
+from azure.core.credentials import AzureKeyCredential
 import os
-import requests
 
 def generate_code(prompt: str, language: str) -> str:
-    api_key = os.getenv("AZURE_OPENAI_API_KEY")
     endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
-    deployment = os.getenv("AZURE_OPENAI_DEPLOYMENT_ID")
+    deployment_id = os.getenv("AZURE_OPENAI_DEPLOYMENT_ID")
+    api_key = os.getenv("AZURE_OPENAI_API_KEY")
     api_version = os.getenv("AZURE_OPENAI_API_VERSION")
 
-    if not all([api_key, endpoint, deployment, api_version]):
-        raise ValueError("❌ Missing Azure OpenAI environment variables")
+    if not all([endpoint, deployment_id, api_key, api_version]):
+        raise ValueError("Azure environment variables are missing.")
 
-    url = f"{endpoint}/openai/deployments/{deployment}/chat/completions?api-version={api_version}"
-    headers = {
-        "Content-Type": "application/json",
-        "api-key": api_key
-    }
-    data = {
-        "messages": [
-            {"role": "system", "content": "You are a helpful and expert data scientist."},
+    client = OpenAIClient(endpoint=endpoint, credential=AzureKeyCredential(api_key), api_version=api_version)
+
+    response = client.chat.completions.create(
+        deployment_id=deployment_id,
+        messages=[
+            {"role": "system", "content": "You are an expert Python data analyst."},
             {"role": "user", "content": prompt}
         ],
-        "temperature": 0.7
-    }
+        temperature=0.7,
+    )
 
-    response = requests.post(url, headers=headers, json=data)
-    if response.status_code != 200:
-        raise Exception(f"OpenAI request failed: {response.status_code} - {response.text}")
-
-    return response.json()["choices"][0]["message"]["content"]
+    return response.choices[0].message.content
