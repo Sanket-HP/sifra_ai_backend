@@ -16,7 +16,7 @@ def root():
 def health():
     return {"status": "healthy"}
 
-# Register your custom routes
-app.include_router(generate_code.router, prefix="", tags=["Code"])
+# Register routers
 app.include_router(upload.router, prefix="", tags=["Upload"])
+app.include_router(generate_code.router, prefix="", tags=["Code"])
 app.include_router(run_code.router, prefix="", tags=["Run"])
