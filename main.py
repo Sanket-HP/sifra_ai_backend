@@ -8,7 +8,7 @@ app = FastAPI(
 )
 
 # Health check
-@app.get("/")
+@app.get("/health")
 def root():
     return {"message": "Welcome to SifraAI Backend"}
 
