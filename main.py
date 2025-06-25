@@ -1,16 +1,13 @@
-# main.py
 from fastapi import FastAPI
 from dotenv import load_dotenv
-import os
 import logging
 
-# Load environment variables
+# Load .env
 load_dotenv()
 
 # Logging
 logging.basicConfig(level=logging.INFO)
 
-# Create FastAPI app
 app = FastAPI(title="SifraAI Backend", version="1.0.0", description="Backend API for SifraAI platform.")
 
 @app.get("/health")
@@ -21,7 +18,7 @@ async def health():
 async def root():
     return {"message": "Welcome to SifraAI Backend!"}
 
-# ✅ Mount all routers here
+# Mount routers
 try:
     from routes import upload, generate_code, run_code
     app.include_router(upload.router, tags=["Upload"])

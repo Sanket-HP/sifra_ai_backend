@@ -1,4 +1,3 @@
-# routes/generate_code.py
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from utils.azureopenai_api import generate_code
@@ -25,8 +24,9 @@ async def generate_code_with_output(data: GenerateCodeInput):
         code = generate_code(gpt_prompt, data.language)
     except Exception as e:
         print("❌ Code generation failed:", str(e))
-        raise HTTPException(status_code=500, detail="Code generation failed. Check server logs.")
+        raise HTTPException(status_code=500, detail=f"Code generation failed: {str(e)}")
 
+    # Run the code only if Python
     if data.language.lower() == "python":
         try:
             output = io.StringIO()
@@ -36,6 +36,6 @@ async def generate_code_with_output(data: GenerateCodeInput):
         except Exception as e:
             program_output = f"Execution Error: {str(e)}"
     else:
-        program_output = "Execution supported only for Python in this version."
+        program_output = "Execution only supported for Python."
 
     return {"code": code, "output": program_output}
