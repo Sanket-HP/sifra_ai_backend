@@ -7,17 +7,17 @@ app = FastAPI(
     description="Backend API for SifraAI platform.",
 )
 
-# Root endpoint
+# Root route
 @app.get("/")
 def root():
     return {"message": "Welcome to SifraAI Backend"}
 
-# Health check endpoint (used by Azure)
+# Health check route
 @app.get("/health")
 def health():
     return {"status": "healthy"}
 
-# Register your custom routes
+# Register routers
 app.include_router(upload.router, prefix="", tags=["Upload"])
 app.include_router(generate_code.router, prefix="", tags=["Code"])
 app.include_router(run_code.router, prefix="", tags=["Run"])
