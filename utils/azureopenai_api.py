@@ -16,15 +16,15 @@ def generate_code(prompt: str, language: str) -> str:
         "Content-Type": "application/json",
         "api-key": api_key
     }
-    body = {
+    data = {
         "messages": [
-            {"role": "system", "content": "You are an expert data scientist."},
+            {"role": "system", "content": "You are a helpful and expert data scientist."},
             {"role": "user", "content": prompt}
         ],
         "temperature": 0.7
     }
 
-    response = requests.post(url, headers=headers, json=body)
+    response = requests.post(url, headers=headers, json=data)
     if response.status_code != 200:
         raise Exception(f"OpenAI request failed: {response.status_code} - {response.text}")
 
