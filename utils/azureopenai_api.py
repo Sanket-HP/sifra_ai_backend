@@ -10,7 +10,7 @@ openai.api_base = os.getenv("AZURE_OPENAI_ENDPOINT")
 openai.api_type = "azure"
 openai.api_version = os.getenv("AZURE_OPENAI_API_VERSION") 
 
-def generate_code_with_output(prompt: str, language: str, dataset_url: str = None) -> str:
+def generate_code_with_output(prompt: str, language: str, dataset_url: str) -> str:
    
     deployment = os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME") 
     
