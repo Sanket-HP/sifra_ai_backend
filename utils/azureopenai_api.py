@@ -13,18 +13,26 @@ def generate_code_with_output(prompt: str, language: str, dataset_url: str) -> s
         raise ValueError("Missing AZURE_OPENAI_DEPLOYMENT_NAME")
 
     full_prompt = (
-        f"You are a coding assistant. Generate {language} code to:\n"
-        f"{prompt}\n\n"
-        f"Dataset URL: {dataset_url}\n"
+        f"You are a helpful coding assistant.\n"
+        f"Generate clean and executable {language} code based on the following request:\n"
+        f"{prompt}\n"
+        f"Dataset URL: {dataset_url}\n\n"
+        f"⚠️ Output ONLY valid code. No markdown (e.g., ```), no comments, no explanations, "
+        f"no text like 'Sure!' or 'Make sure...'.\n"
+        f"Only provide code, line-by-line. Include all required imports.\n"
     )
 
     response = client.chat.completions.create(
         model=deployment,
         messages=[
-            {"role": "system", "content": f"You are a helpful assistant that writes {language} code."},
+            {
+                "role": "system",
+                "content": f"You are a helpful assistant that writes clean, executable {language} code only."
+            },
             {"role": "user", "content": full_prompt}
         ],
-        temperature=0.3,
+        temperature=0.2,
         max_tokens=1500
     )
+    
     return response.choices[0].message.content.strip()
