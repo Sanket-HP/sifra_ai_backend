@@ -1,7 +1,5 @@
 import os
 from openai import AzureOpenAI
-from azure.identity import DefaultAzureCredential
-from azure.ai.openai import OpenAIClient
 
 client = AzureOpenAI(
     api_key=os.getenv("AZURE_OPENAI_API_KEY"),
@@ -10,29 +8,23 @@ client = AzureOpenAI(
 )
 
 def generate_code_with_output(prompt: str, language: str, dataset_url: str) -> str:
-    client = OpenAIClient(
-        endpoint=api_base,
-        credential=DefaultAzureCredential()
+    deployment = os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME")
+    if not deployment:
+        raise ValueError("Missing AZURE_OPENAI_DEPLOYMENT_NAME")
+
+    full_prompt = (
+        f"You are a coding assistant. Generate {language} code to:\n"
+        f"{prompt}\n\n"
+        f"Dataset URL: {dataset_url}\n"
     )
-
-    system_prompt = f"""
-You are a {language} data science assistant.
-Generate CLEAN {language} code only.
-DO NOT return markdown (no ```), no explanations.
-Only valid code.
-The dataset is available at: {dataset_url}
-"""
-
-    user_prompt = f"{prompt}\nReturn only runnable {language} code."
 
     response = client.chat.completions.create(
-        model=deployment_name,
+        model=deployment,
         messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt}
+            {"role": "system", "content": f"You are a helpful assistant that writes {language} code."},
+            {"role": "user", "content": full_prompt}
         ],
         temperature=0.3,
-        max_tokens=1000,
+        max_tokens=1500
     )
-
     return response.choices[0].message.content.strip()
