@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from routes import generate_code, upload, run_code
 import logging
 
-# Optional: Add startup log (for Azure log stream)
+# Azure log stream friendly logs
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 logger.info("🚀 SifraAI Backend starting...")
@@ -21,7 +21,7 @@ def root():
 def health():
     return {"status": "healthy"}
 
-# Attach routes
+# Include all routes
 app.include_router(upload.router, prefix="", tags=["Upload"])
 app.include_router(generate_code.router, prefix="", tags=["Code"])
 app.include_router(run_code.router, prefix="", tags=["Run"])
