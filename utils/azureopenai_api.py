@@ -1,9 +1,13 @@
-from azure.ai.openai import OpenAIClient
-from azure.identity import DefaultAzureCredential
 import os
+from openai import AzureOpenAI
+from azure.identity import DefaultAzureCredential
+from azure.ai.openai import OpenAIClient
 
-deployment_name = os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME")
-api_base = os.getenv("AZURE_OPENAI_ENDPOINT")
+client = AzureOpenAI(
+    api_key=os.getenv("AZURE_OPENAI_API_KEY"),
+    api_version=os.getenv("AZURE_OPENAI_API_VERSION"),
+    azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT")
+)
 
 def generate_code_with_output(prompt: str, language: str, dataset_url: str) -> str:
     client = OpenAIClient(
