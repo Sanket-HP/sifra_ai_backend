@@ -20,6 +20,10 @@ def generate_code_with_output(prompt: str, language: str, dataset_url: str) -> s
         f"⚠️ Output ONLY valid code. No markdown (e.g., ```), no comments, no explanations, "
         f"no text like 'Sure!' or 'Make sure...'.\n"
         f"Only provide code, line-by-line. Include all required imports.\n"
+        f"You are a Python coding assistant. Write only executable code in blocks "
+        f"for this task:\n{prompt}\n"
+        f"Dataset URL: {dataset_url}\n"
+        f"Return code in clean python format only, no markdown, no explanations."
     )
 
     response = client.chat.completions.create(
