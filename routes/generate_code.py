@@ -22,26 +22,41 @@ def generate_code_api(input_data: GenerateCodeInput):
             input_data.dataset_url
         )
 
-        # Step 2: Split code by logic block (adjust if needed)
-        code_blocks = full_code.split('\n\n')  # Ensure backend generates blocks like this
+        # Step 2: Split code into logical blocks
+        code_blocks = full_code.split('\n\n')
 
         executed_blocks = []
         exec_globals = {}
 
-        # Step 3: Run each code block, capture print output
         for block in code_blocks:
-            output_buffer = io.StringIO()
+            cleaned_block = block.strip()
+
+            # Skip markdown or explanatory lines
+            if (
+                cleaned_block.startswith("```")
+                or "Sure!" in cleaned_block
+                or "Make sure" in cleaned_block
+                or cleaned_block.lower().startswith("here is")
+                or cleaned_block.lower().startswith("example")
+            ):
+                continue
+
+            output = ""
             try:
-                with contextlib.redirect_stdout(output_buffer):
-                    exec(block, exec_globals)
-                output = output_buffer.getvalue().strip() or "Executed successfully."
-            except Exception:
+                # Capture stdout using contextlib
+                stdout_buffer = io.StringIO()
+                with contextlib.redirect_stdout(stdout_buffer):
+                    exec(cleaned_block, exec_globals)
+
+                output = stdout_buffer.getvalue().strip()
+                if not output:
+                    output = "Executed successfully."
+
+            except Exception as e:
                 output = f"Error:\n{traceback.format_exc()}"
-            finally:
-                output_buffer.close()
 
             executed_blocks.append({
-                "code": block,
+                "code": cleaned_block,
                 "output": output
             })
 
