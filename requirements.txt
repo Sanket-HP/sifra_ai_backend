@@ -5,21 +5,14 @@ numpy
 pandas
 scikit-learn
 scipy
-matplotlib
 seaborn
 plotly
 bokeh
-openpyxl
-joblib
-tqdm
 python-dateutil
 
 # ---------------------------
 # Machine Learning & Deep Learning
 # ---------------------------
-xgboost
-lightgbm
-catboost
 tensorflow
 tensorflow-io-gcs-filesystem
 tensorboard
@@ -34,11 +27,7 @@ spacy-legacy
 spacy-loggers
 nltk
 textblob
-sentence-transformers
-transformers
-huggingface-hub
 openai
-langchain
 llama-index
 
 # ---------------------------
@@ -55,11 +44,5 @@ fastapi
 uvicorn
 gunicorn
 requests
-beautifulsoup4
 aiohttp
 PyJWT
-
-# ---------------------------
-# Optional Dev Tools
-# ---------------------------
-python-dotenv
