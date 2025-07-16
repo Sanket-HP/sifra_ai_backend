@@ -1,8 +1,10 @@
 from fastapi import FastAPI
 from routes import generate_code, upload, run_code
 import logging
+from dotenv import load_dotenv
 
-# Azure log stream friendly logs
+load_dotenv()  # Load environment variables
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 logger.info("🚀 SifraAI Backend starting...")
@@ -17,11 +19,10 @@ app = FastAPI(
 def root():
     return {"message": "Welcome to SifraAI Backend"}
 
-@app.get("/health", status_code=200)
+@app.get("/health", tags=["Health"])
 def health():
     return {"status": "healthy"}
 
-# Include all routes
 app.include_router(upload.router, prefix="", tags=["Upload"])
 app.include_router(generate_code.router, prefix="", tags=["Code"])
 app.include_router(run_code.router, prefix="", tags=["Run"])
