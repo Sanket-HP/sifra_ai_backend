@@ -46,3 +46,5 @@ gunicorn
 requests
 aiohttp
 PyJWT
+
+python-multipart
