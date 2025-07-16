@@ -46,5 +46,7 @@ gunicorn
 requests
 aiohttp
 PyJWT
-
+pydantic
+python-dotenv
+aiofiles
 python-multipart
