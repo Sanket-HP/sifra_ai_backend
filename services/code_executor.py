@@ -4,16 +4,17 @@ from __future__ import annotations
 import base64
 import contextlib
 import io
-import sys
 import traceback
-from typing import Any, Dict, List
+import subprocess
+import sqlite3
+from typing import Any, Dict, List, Optional
 
 # Headless plotting
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 
-# Optional: capture Plotly figures if your generated code uses Plotly
+# Optional: Plotly capture
 try:
     import plotly.graph_objects as go  # type: ignore
     import plotly.io as pio           # type: ignore
@@ -22,8 +23,10 @@ except Exception:
     _PLOTLY_AVAILABLE = False
 
 
+# -----------------------------
+# Visualization capture helpers
+# -----------------------------
 def _capture_matplotlib_images() -> List[str]:
-    """Return a list of PNG images (base64) for any open Matplotlib figures."""
     images: List[str] = []
     try:
         for num in plt.get_fignums():
@@ -38,7 +41,6 @@ def _capture_matplotlib_images() -> List[str]:
 
 
 def _capture_plotly_figures(globs: Dict[str, Any]) -> List[str]:
-    """Scan globals for Plotly figures and capture them as PNG (base64)."""
     if not _PLOTLY_AVAILABLE:
         return []
     images: List[str] = []
@@ -48,56 +50,127 @@ def _capture_plotly_figures(globs: Dict[str, Any]) -> List[str]:
                 img_bytes = pio.to_image(v, format="png")  # requires kaleido
                 images.append(base64.b64encode(img_bytes).decode("utf-8"))
         except Exception:
-            # If kaleido is missing or to_image fails, just skip
             pass
     return images
 
 
-def execute_code_blocks(code: str) -> List[Dict[str, Any]]:
+# -----------------------------
+# Core Executor
+# -----------------------------
+def execute_code_blocks(
+    code: str,
+    language: str = "python",
+    dataset_url: Optional[str] = None,
+) -> List[Dict[str, Any]]:
     """
-    Split code into simple blocks and execute them sequentially,
-    capturing stdout and any generated visualizations.
+    Execute code cell-wise. Supports Python, R, and SQL.
+    Returns a list of results with stdout, errors, and visualizations.
     """
-    # Naive split: double newlines separate "blocks"
     blocks = [b for b in code.split("\n\n") if b.strip()]
-
-    exec_globals: Dict[str, Any] = {}
     results: List[Dict[str, Any]] = []
 
-    for block in blocks:
-        stdout_buffer = io.StringIO()
-        error_text = None
-        images: List[str] = []
+    if language.lower() == "python":
+        exec_globals: Dict[str, Any] = {}
+        if dataset_url:
+            # Inject dataset_url into Python context
+            exec_globals["DATASET_URL"] = dataset_url
 
-        # Reset figures for this block to avoid leaking cross-block plots
-        plt.close("all")
+        for block in blocks:
+            stdout_buffer = io.StringIO()
+            error_text = None
+            images: List[str] = []
 
-        try:
-            with contextlib.redirect_stdout(stdout_buffer):
-                exec(block, exec_globals)  # nosec - trusted environment assumed
+            plt.close("all")
 
-            # Capture any Matplotlib figures
-            images.extend(_capture_matplotlib_images())
-
-            # Capture Plotly figures if present
-            images.extend(_capture_plotly_figures(exec_globals))
-
-        except Exception:
-            error_text = traceback.format_exc()
-            # Even on error, try to capture figures that may have been produced
             try:
+                with contextlib.redirect_stdout(stdout_buffer):
+                    exec(block, exec_globals)  # nosec
+
                 images.extend(_capture_matplotlib_images())
                 images.extend(_capture_plotly_figures(exec_globals))
-            except Exception:
-                pass
 
+            except Exception:
+                error_text = traceback.format_exc()
+                try:
+                    images.extend(_capture_matplotlib_images())
+                    images.extend(_capture_plotly_figures(exec_globals))
+                except Exception:
+                    pass
+
+            results.append(
+                {
+                    "input": block,
+                    "output": stdout_buffer.getvalue(),
+                    "error": error_text,
+                    "visualizations": images,
+                }
+            )
+
+    elif language.lower() == "r":
+        for block in blocks:
+            stdout_buffer = io.StringIO()
+            error_text = None
+            output_text = ""
+
+            try:
+                # Run R code via subprocess
+                proc = subprocess.run(
+                    ["Rscript", "-e", block],
+                    capture_output=True,
+                    text=True
+                )
+                output_text = proc.stdout
+                if proc.stderr:
+                    error_text = proc.stderr
+            except Exception:
+                error_text = traceback.format_exc()
+
+            results.append(
+                {
+                    "input": block,
+                    "output": output_text,
+                    "error": error_text,
+                    "visualizations": [],  # TODO: support R plots (png capture)
+                }
+            )
+
+    elif language.lower() == "sql":
+        # Use in-memory SQLite for MVP
+        conn = sqlite3.connect(":memory:")
+        cursor = conn.cursor()
+
+        for block in blocks:
+            output_text = ""
+            error_text = None
+            try:
+                cursor.execute(block)
+                rows = cursor.fetchall()
+                col_names = [desc[0] for desc in cursor.description] if cursor.description else []
+                if rows:
+                    output_text = str([dict(zip(col_names, row)) for row in rows])
+                else:
+                    output_text = "Query executed successfully."
+            except Exception:
+                error_text = traceback.format_exc()
+
+            results.append(
+                {
+                    "input": block,
+                    "output": output_text,
+                    "error": error_text,
+                    "visualizations": [],
+                }
+            )
+
+        conn.close()
+
+    else:
         results.append(
             {
-                "input": block,
-                "output": stdout_buffer.getvalue(),
-                "error": error_text,
-                # One or more images as base64 PNGs
-                "visualizations": images,
+                "input": code,
+                "output": "",
+                "error": f"Unsupported language: {language}",
+                "visualizations": [],
             }
         )
 
