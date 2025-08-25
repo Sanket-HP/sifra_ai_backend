@@ -9,6 +9,8 @@ import subprocess
 import sqlite3
 from typing import Any, Dict, List, Optional
 
+import pandas as pd
+
 # Headless plotting
 import matplotlib
 matplotlib.use("Agg")
@@ -55,6 +57,29 @@ def _capture_plotly_figures(globs: Dict[str, Any]) -> List[str]:
 
 
 # -----------------------------
+# Dataset Loader
+# -----------------------------
+def _load_dataset(dataset_url: str) -> Optional[pd.DataFrame]:
+    """
+    Load dataset from CSV, JSON, or XLSX into pandas DataFrame.
+    """
+    if not dataset_url:
+        return None
+
+    try:
+        if dataset_url.endswith(".csv"):
+            return pd.read_csv(dataset_url)
+        elif dataset_url.endswith(".json"):
+            return pd.read_json(dataset_url)
+        elif dataset_url.endswith(".xlsx"):
+            return pd.read_excel(dataset_url)
+        else:
+            raise ValueError(f"Unsupported dataset format: {dataset_url}")
+    except Exception as e:
+        raise RuntimeError(f"Failed to load dataset: {e}")
+
+
+# -----------------------------
 # Core Executor
 # -----------------------------
 def execute_code_blocks(
@@ -69,17 +94,29 @@ def execute_code_blocks(
     blocks = [b for b in code.split("\n\n") if b.strip()]
     results: List[Dict[str, Any]] = []
 
+    # ---------------- Python ----------------
     if language.lower() == "python":
         exec_globals: Dict[str, Any] = {}
+        df: Optional[pd.DataFrame] = None
+
         if dataset_url:
-            # Inject dataset_url into Python context
-            exec_globals["DATASET_URL"] = dataset_url
+            try:
+                df = _load_dataset(dataset_url)
+                if df is not None:
+                    exec_globals["DATASET"] = df
+                    exec_globals["DATASET_URL"] = dataset_url
+            except Exception as e:
+                results.append({
+                    "input": "",
+                    "output": "",
+                    "error": str(e),
+                    "visualizations": []
+                })
 
         for block in blocks:
             stdout_buffer = io.StringIO()
             error_text = None
             images: List[str] = []
-
             plt.close("all")
 
             try:
@@ -106,9 +143,9 @@ def execute_code_blocks(
                 }
             )
 
+    # ---------------- R ----------------
     elif language.lower() == "r":
         for block in blocks:
-            stdout_buffer = io.StringIO()
             error_text = None
             output_text = ""
 
@@ -130,14 +167,28 @@ def execute_code_blocks(
                     "input": block,
                     "output": output_text,
                     "error": error_text,
-                    "visualizations": [],  # TODO: support R plots (png capture)
+                    "visualizations": [],  # TODO: capture R plots
                 }
             )
 
+    # ---------------- SQL ----------------
     elif language.lower() == "sql":
-        # Use in-memory SQLite for MVP
         conn = sqlite3.connect(":memory:")
         cursor = conn.cursor()
+
+        # Load dataset into SQL if available
+        if dataset_url:
+            try:
+                df = _load_dataset(dataset_url)
+                if df is not None:
+                    df.to_sql("dataset", conn, if_exists="replace", index=False)
+            except Exception as e:
+                results.append({
+                    "input": "",
+                    "output": "",
+                    "error": str(e),
+                    "visualizations": []
+                })
 
         for block in blocks:
             output_text = ""
@@ -164,6 +215,7 @@ def execute_code_blocks(
 
         conn.close()
 
+    # ---------------- Unsupported ----------------
     else:
         results.append(
             {
