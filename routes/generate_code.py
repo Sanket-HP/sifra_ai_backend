@@ -13,7 +13,21 @@ def generate_code_api(input_data: GenerateCodeInput):
             input_data.language,
             input_data.dataset_url
         )
-        result = execute_code_blocks(code)
+        result = execute_code_blocks(
+            code,
+            language=input_data.language,
+            dataset_url=input_data.dataset_url
+        )
         return {"blocks": result}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        return {
+            "blocks": [
+                {
+                    "input": "",
+                    "output": "",
+                    "error": str(e),
+                    "visualizations": []
+                }
+            ]
+        }
+
