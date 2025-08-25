@@ -1,86 +1,59 @@
 # routes/run_code.py
 from fastapi import APIRouter
 from pydantic import BaseModel
-import io
-import contextlib
+from services.code_executor import execute_code_blocks
 import traceback
-import base64
-
-# Headless plotting
-import matplotlib
-matplotlib.use("Agg")
-import matplotlib.pyplot as plt  # noqa: E402
-
-# Optional Plotly capture
-try:
-    import plotly.graph_objects as go  # type: ignore
-    import plotly.io as pio           # type: ignore
-    _PLOTLY_AVAILABLE = True
-except Exception:
-    _PLOTLY_AVAILABLE = False
 
 router = APIRouter()
 
+# Supported languages
+SUPPORTED_LANGUAGES = ["python", "r", "sql"]
 
 class CodeInput(BaseModel):
     code: str
-
-
-def _capture_matplotlib_images():
-    images = []
-    try:
-        for num in plt.get_fignums():
-            fig = plt.figure(num)
-            buf = io.BytesIO()
-            fig.savefig(buf, format="png", bbox_inches="tight")
-            buf.seek(0)
-            images.append(base64.b64encode(buf.read()).decode("utf-8"))
-    finally:
-        plt.close("all")
-    return images
-
-
-def _capture_plotly_figures(globs):
-    if not _PLOTLY_AVAILABLE:
-        return []
-    images = []
-    for v in globs.values():
-        try:
-            if isinstance(v, go.Figure):  # type: ignore
-                img_bytes = pio.to_image(v, format="png")  # requires kaleido
-                images.append(base64.b64encode(img_bytes).decode("utf-8"))
-        except Exception:
-            pass
-    return images
-
-
-# Optional: global variable context to maintain session (careful for concurrency!)
-exec_globals = {}
+    language: str = "python"  # default
+    dataset_url: str | None = None
+    dataset_type: str | None = None  # "csv", "json", "xlsx"
 
 
 @router.post("/run_code")
 async def run_code(data: CodeInput):
+    """
+    Execute code cell-wise with real-time outputs, visualizations,
+    and optional dataset integration (CSV, JSON, XLSX).
+    Supports Python, R, SQL.
+    """
     try:
-        # Reset figures for this run
-        plt.close("all")
+        # Validate language
+        if data.language.lower() not in SUPPORTED_LANGUAGES:
+            return {
+                "blocks": [
+                    {
+                        "input": data.code,
+                        "output": "",
+                        "error": f"Unsupported language: {data.language}. "
+                                 f"Supported: {SUPPORTED_LANGUAGES}",
+                        "visualizations": [],
+                    }
+                ]
+            }
 
-        stdout_buffer = io.StringIO()
-        with contextlib.redirect_stdout(stdout_buffer):
-            exec(data.code, exec_globals)  # nosec - trusted environment assumed
-
-        images = []
-        images.extend(_capture_matplotlib_images())
-        images.extend(_capture_plotly_figures(exec_globals))
-
-        return {
-            "output": stdout_buffer.getvalue(),
-            "error": None,
-            "visualizations": images,  # <-- list of base64 PNG strings
-        }
+        results = execute_code_blocks(
+            data.code,
+            language=data.language.lower(),
+            dataset_url=data.dataset_url,
+            dataset_type=data.dataset_type
+        )
+        return {"blocks": results}
 
     except Exception:
         return {
-            "output": "",
-            "error": traceback.format_exc(),
-            "visualizations": [],
+            "blocks": [
+                {
+                    "input": data.code,
+                    "output": "",
+                    "error": traceback.format_exc(),
+                    "visualizations": [],
+                }
+            ]
         }
