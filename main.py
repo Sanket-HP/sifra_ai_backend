@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from routes import generate_code, upload, run_code
+from app.routes import dashboard_routes  # NEW
 import logging
 
 # Azure log stream friendly logs
@@ -28,3 +29,4 @@ def health():
 app.include_router(upload.router, prefix="", tags=["Upload"])
 app.include_router(generate_code.router, prefix="", tags=["Code"])
 app.include_router(run_code.router, prefix="", tags=["Run"])
+app.include_router(dashboard_routes.router, prefix="/api", tags=["Dashboard"])  # NEW
