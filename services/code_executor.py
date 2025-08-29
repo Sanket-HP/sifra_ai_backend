@@ -15,6 +15,7 @@ import pandas as pd
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
+import seaborn as sns  # Added seaborn support
 
 # Optional: Plotly capture
 try:
@@ -29,6 +30,9 @@ except Exception:
 # Visualization capture helpers
 # -----------------------------
 def _capture_matplotlib_images() -> List[str]:
+    """
+    Capture all active Matplotlib/Seaborn figures as base64 strings.
+    """
     images: List[str] = []
     try:
         for num in plt.get_fignums():
@@ -43,6 +47,9 @@ def _capture_matplotlib_images() -> List[str]:
 
 
 def _capture_plotly_figures(globs: Dict[str, Any]) -> List[str]:
+    """
+    Capture Plotly figures as base64 strings (requires kaleido).
+    """
     if not _PLOTLY_AVAILABLE:
         return []
     images: List[str] = []
@@ -86,6 +93,7 @@ def execute_code_blocks(
     code: str,
     language: str = "python",
     dataset_url: Optional[str] = None,
+    dataset_type: Optional[str] = None,
 ) -> List[Dict[str, Any]]:
     """
     Execute code cell-wise. Supports Python, R, and SQL.
@@ -117,12 +125,13 @@ def execute_code_blocks(
             stdout_buffer = io.StringIO()
             error_text = None
             images: List[str] = []
-            plt.close("all")
+            plt.close("all")  # reset before execution
 
             try:
                 with contextlib.redirect_stdout(stdout_buffer):
                     exec(block, exec_globals)  # nosec
 
+                # Capture visualizations
                 images.extend(_capture_matplotlib_images())
                 images.extend(_capture_plotly_figures(exec_globals))
 
@@ -167,7 +176,7 @@ def execute_code_blocks(
                     "input": block,
                     "output": output_text,
                     "error": error_text,
-                    "visualizations": [],  # TODO: capture R plots
+                    "visualizations": [],  # TODO: capture R plots in future
                 }
             )
 
@@ -209,7 +218,7 @@ def execute_code_blocks(
                     "input": block,
                     "output": output_text,
                     "error": error_text,
-                    "visualizations": [],
+                    "visualizations": [],  # TODO: Add SQL visualization suggestions
                 }
             )
 
