@@ -3,6 +3,8 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
 from services.code_executor import execute_code_blocks
+from services.dashboard_generator import generate_dashboard   # NEW
+from services.insight_generator import generate_insights      # NEW
 import traceback
 from typing import Optional, Literal
 
@@ -23,6 +25,8 @@ class CodeInput(BaseModel):
     language: Literal["python", "r", "sql"] = "python"  # default is Python
     dataset_url: Optional[str] = None
     dataset_type: Optional[Literal["csv", "json", "xlsx"]] = None
+    generate_dashboard: Optional[bool] = False   # NEW: auto dashboard flag
+    generate_insights: Optional[bool] = False    # NEW: auto insights flag
 
 
 @router.post("/run_code")
@@ -31,6 +35,7 @@ async def run_code(data: CodeInput):
     Execute code cell-wise with real-time outputs, visualizations,
     and optional dataset integration (CSV, JSON, XLSX).
     Supports Python, R, SQL.
+    Optionally generates dashboards and insights.
     """
 
     try:
@@ -47,7 +52,9 @@ async def run_code(data: CodeInput):
                         ),
                         "visualizations": [],
                     }
-                ]
+                ],
+                "dashboard": None,
+                "insights": None,
             }
 
         # Validate dataset type if provided
@@ -63,10 +70,12 @@ async def run_code(data: CodeInput):
                         ),
                         "visualizations": [],
                     }
-                ]
+                ],
+                "dashboard": None,
+                "insights": None,
             }
 
-        # Execute code and return results
+        # Step 1: Execute user-provided code
         results = execute_code_blocks(
             code=data.code,
             language=data.language.lower(),
@@ -74,7 +83,26 @@ async def run_code(data: CodeInput):
             dataset_type=data.dataset_type,
         )
 
-        return {"blocks": results}
+        # Step 2: Optionally auto-generate dashboard
+        dashboard = None
+        if data.generate_dashboard and data.dataset_url:
+            dashboard = generate_dashboard(
+                dataset_url=data.dataset_url,
+                language=data.language.lower(),
+            )
+
+        # Step 3: Optionally auto-generate insights
+        insights = None
+        if data.generate_insights and data.dataset_url:
+            insights = generate_insights(
+                dataset_url=data.dataset_url,
+            )
+
+        return {
+            "blocks": results,
+            "dashboard": dashboard,
+            "insights": insights,
+        }
 
     except Exception:
         # Return detailed traceback for debugging
@@ -86,5 +114,7 @@ async def run_code(data: CodeInput):
                     "error": traceback.format_exc(),
                     "visualizations": [],
                 }
-            ]
+            ],
+            "dashboard": None,
+            "insights": None,
         }
