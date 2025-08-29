@@ -1,4 +1,4 @@
-﻿# -----------------------------------------
+# -----------------------------------------
 # Core Data Science Libraries
 # -----------------------------------------
 numpy
@@ -14,7 +14,7 @@ matplotlib
 seaborn
 plotly
 bokeh
-kaleido
+kaleido        # needed for saving Plotly figures
 altair
 pygal
 folium
@@ -25,7 +25,7 @@ geopandas
 # Machine Learning & Deep Learning
 # -----------------------------------------
 tensorflow
-tensorflow-io-gcs-filesystem
+tensorflow-io-gcs-filesystem   # fixes some TensorFlow IO ops
 tensorboard
 keras
 h5py
@@ -39,18 +39,22 @@ spacy-loggers
 nltk
 textblob
 openai
-llama-index
+llama-index   # also known as "gpt-index"
+
+# For HuggingFace support (optional but very common)
+transformers
+sentence-transformers
 
 # -----------------------------------------
 # SQL Libraries
 # -----------------------------------------
 sqlalchemy
-# sqlite3 is built-in with Python, no need to install
-psycopg2-binary  # PostgreSQL
-pymysql          # MySQL
+psycopg2-binary   # PostgreSQL
+pymysql           # MySQL
 duckdb
 pandasql
 sqlite-utils
+# sqlite3 is built into Python
 
 # -----------------------------------------
 # Azure SDKs
@@ -85,4 +89,3 @@ jupyterlab
 nbformat
 nbconvert
 ipython
-
