@@ -1,7 +1,9 @@
+import os
+import logging
 from fastapi import FastAPI
 from routes import generate_code, upload, run_code
 from app.routes import dashboard_routes  # NEW
-import logging
+import uvicorn
 
 # Azure log stream friendly logs
 logging.basicConfig(level=logging.INFO)
@@ -30,3 +32,11 @@ app.include_router(upload.router, prefix="", tags=["Upload"])
 app.include_router(generate_code.router, prefix="", tags=["Code"])
 app.include_router(run_code.router, prefix="", tags=["Run"])
 app.include_router(dashboard_routes.router, prefix="/api", tags=["Dashboard"])  # NEW
+
+# Entry point for running the app with uvicorn
+if __name__ == "__main__":
+    # Get the port from environment variable set by Azure App Service, default to 8000
+    port = int(os.environ.get("PORT", 8000))
+    logger.info(f"Starting FastAPI app on host 0.0.0.0 port {port}")
+    
+    uvicorn.run("main:app", host="0.0.0.0", port=port, log_level="info")
