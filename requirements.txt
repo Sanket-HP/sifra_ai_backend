@@ -1,3 +1,96 @@
+
+# -----------------------------------------
+# Core Data Science Libraries
+# -----------------------------------------
+numpy
+pandas
+scikit-learn
+scipy
+python-dateutil
+
+# -----------------------------------------
+# Visualization Libraries
+# -----------------------------------------
+matplotlib
+seaborn
+plotly
+bokeh
+kaleido        # needed for saving Plotly figures
+altair
+pygal
+folium
+dash
+geopandas
+
+# -----------------------------------------
+# Machine Learning & Deep Learning
+# -----------------------------------------
+tensorflow
+tensorflow-io-gcs-filesystem   # fixes some TensorFlow IO ops
+tensorboard
+keras
+h5py
+
+# -----------------------------------------
+# Natural Language Processing (NLP)
+# -----------------------------------------
+spacy
+spacy-legacy
+spacy-loggers
+nltk
+textblob
+openai
+llama-index   # also known as "gpt-index"
+
+# For HuggingFace support (optional but very common)
+transformers
+sentence-transformers
+
+# -----------------------------------------
+# SQL Libraries
+# -----------------------------------------
+sqlalchemy
+psycopg2-binary   # PostgreSQL
+pymysql           # MySQL
+duckdb
+pandasql
+sqlite-utils
+# sqlite3 is built into Python
+
+# -----------------------------------------
+# Azure SDKs
+# -----------------------------------------
+azure-core
+azure-identity
+azure-storage-blob
+
+# -----------------------------------------
+# Web Frameworks & APIs
+# -----------------------------------------
+fastapi
+uvicorn
+gunicorn
+requests
+aiohttp
+PyJWT
+pydantic
+python-dotenv
+aiofiles
+python-multipart
+
+# -----------------------------------------
+# Additional Useful Utilities
+# -----------------------------------------
+tqdm
+joblib
+pytz
+jinja2
+notebook
+jupyterlab
+nbformat
+nbconvert
+ipython
+
 # -----------------------------------------
 # Core Data Science Libraries
 # -----------------------------------------
