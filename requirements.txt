@@ -1,40 +1,82 @@
 # -----------------------------------------
-# Core Data Science Libraries
+# Core Data Science
 # -----------------------------------------
-numpy
-pandas
-scikit-learn
-scipy
-python-dateutil
+numpy==1.26.4
+pandas==2.2.2
+scikit-learn==1.5.1
+scipy==1.14.0
+python-dateutil==2.9.0.post0
 
 # -----------------------------------------
-# Visualization Libraries
+# Visualization
 # -----------------------------------------
-matplotlib
-seaborn
-plotly
-bokeh
-kaleido
-altair
-pygal
-folium
-dash
-geopandas
+matplotlib==3.9.1
+seaborn==0.13.2
+plotly==5.23.0
+kaleido==0.2.1
+altair==5.4.1
+folium==0.17.0
+geopandas==1.0.1
 
 # -----------------------------------------
-# Machine Learning & Deep Learning
+# Machine Learning / Deep Learning
+# (pin TensorFlow to CPU to avoid GPU issues in Azure)
 # -----------------------------------------
-tensorflow
-tensorflow-io-gcs-filesystem
-tensorboard
-keras
-h5py
+tensorflow-cpu==2.17.0
+tensorboard==2.17.1
+keras==3.5.0
+h5py==3.11.0
 
 # -----------------------------------------
-# Natural Language Processing (NLP)
+# NLP
 # -----------------------------------------
-spacy
-spacy-legacy
+spacy==3.7.5
+nltk==3.9.1
+textblob==0.18.0.post0
+openai==1.43.0
+llama-index==0.11.19
+
+# -----------------------------------------
+# SQL
+# -----------------------------------------
+sqlalchemy==2.0.32
+psycopg2-binary==2.9.9
+pymysql==1.1.1
+duckdb==1.1.2
+pandasql==0.7.3
+sqlite-utils==3.37
+
+# -----------------------------------------
+# Azure SDKs
+# -----------------------------------------
+azure-core==1.30.2
+azure-identity==1.19.0
+azure-storage-blob==12.22.0
+
+# -----------------------------------------
+# Web Frameworks / APIs
+# -----------------------------------------
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+gunicorn==23.0.0
+requests==2.32.3
+aiohttp==3.10.5
+PyJWT==2.9.0
+pydantic==2.9.2
+python-dotenv==1.0.1
+aiofiles==24.1.0
+python-multipart==0.0.9
+
+# -----------------------------------------
+# Utilities
+# -----------------------------------------
+tqdm==4.66.5
+joblib==1.4.2
+pytz==2024.2
+jinja2==3.1.4
+nbformat==5.10.4
+nbconvert==7.16.4
+ipython==8.27.0spacy-legacy
 spacy-loggers
 nltk
 textblob
