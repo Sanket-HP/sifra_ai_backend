@@ -3,8 +3,6 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
 from services.code_executor import execute_code_blocks
-from services.dashboard_generator import generate_dashboard   # NEW
-from services.insight_generator import generate_insights      # NEW
 import traceback
 from typing import Optional, Literal
 

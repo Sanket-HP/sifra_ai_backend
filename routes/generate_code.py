@@ -2,8 +2,6 @@ from fastapi import APIRouter
 from models.schemas import GenerateCodeInput
 from utils.azureopenai_api import generate_code_with_output
 from services.code_executor import execute_code_blocks
-from services.dashboard_generator import generate_dashboard  # now exists
-from services.insight_generator import generate_insights     # now exists
 
 router = APIRouter()
 

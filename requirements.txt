@@ -1,5 +1,5 @@
 # -----------------------------------------
-# Core Data Science Libraries
+# Core Data Science
 # -----------------------------------------
 numpy
 pandas
@@ -8,46 +8,40 @@ scipy
 python-dateutil
 
 # -----------------------------------------
-# Visualization Libraries
+# Visualization
 # -----------------------------------------
 matplotlib
 seaborn
 plotly
-bokeh
 kaleido
 altair
-pygal
 folium
-dash
 geopandas
 
 # -----------------------------------------
-# Machine Learning & Deep Learning
+# Machine Learning / Deep Learning
+# (use tensorflow-cpu to avoid GPU issues in Azure)
 # -----------------------------------------
-tensorflow
-tensorflow-io-gcs-filesystem
+tensorflow-cpu
 tensorboard
 keras
 h5py
 
 # -----------------------------------------
-# Natural Language Processing (NLP)
+# NLP
 # -----------------------------------------
 spacy
-spacy-legacy
-spacy-loggers
 nltk
 textblob
 openai
 llama-index
 
 # -----------------------------------------
-# SQL Libraries
+# SQL
 # -----------------------------------------
 sqlalchemy
-# sqlite3 is built-in with Python, no need to install
-psycopg2-binary  # PostgreSQL
-pymysql          # MySQL
+psycopg2-binary
+pymysql
 duckdb
 pandasql
 sqlite-utils
@@ -60,10 +54,10 @@ azure-identity
 azure-storage-blob
 
 # -----------------------------------------
-# Web Frameworks & APIs
+# Web Frameworks / APIs
 # -----------------------------------------
 fastapi
-uvicorn
+uvicorn[standard]
 gunicorn
 requests
 aiohttp
@@ -74,15 +68,12 @@ aiofiles
 python-multipart
 
 # -----------------------------------------
-# Additional Useful Utilities
+# Utilities
 # -----------------------------------------
 tqdm
 joblib
 pytz
 jinja2
-notebook
-jupyterlab
 nbformat
 nbconvert
 ipython
-
