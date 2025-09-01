@@ -135,6 +135,17 @@ def execute_code_blocks(
                 images.extend(_capture_matplotlib_images())
                 images.extend(_capture_plotly_figures(exec_globals))
 
+                output_text = stdout_buffer.getvalue().strip()
+
+                # Add success messages if no explicit output
+                if not output_text:
+                    if "import " in block:
+                        output_text = "✅ Libraries imported successfully"
+                    elif "read_csv" in block or "read_excel" in block or "read_json" in block:
+                        output_text = "✅ Dataset loaded successfully"
+                    else:
+                        output_text = "✅ Code executed successfully"
+
             except Exception:
                 error_text = traceback.format_exc()
                 try:
@@ -142,11 +153,12 @@ def execute_code_blocks(
                     images.extend(_capture_plotly_figures(exec_globals))
                 except Exception:
                     pass
+                output_text = ""
 
             results.append(
                 {
                     "input": block,
-                    "output": stdout_buffer.getvalue(),
+                    "output": output_text,
                     "error": error_text,
                     "visualizations": images,
                 }
@@ -165,9 +177,11 @@ def execute_code_blocks(
                     capture_output=True,
                     text=True
                 )
-                output_text = proc.stdout
+                output_text = proc.stdout.strip()
                 if proc.stderr:
                     error_text = proc.stderr
+                if not output_text and not error_text:
+                    output_text = "✅ R code executed successfully"
             except Exception:
                 error_text = traceback.format_exc()
 
@@ -209,7 +223,7 @@ def execute_code_blocks(
                 if rows:
                     output_text = str([dict(zip(col_names, row)) for row in rows])
                 else:
-                    output_text = "Query executed successfully."
+                    output_text = "✅ Query executed successfully"
             except Exception:
                 error_text = traceback.format_exc()
 
