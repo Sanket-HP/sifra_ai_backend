@@ -8,8 +8,10 @@ router = APIRouter()
 @router.post("/generate_code_with_output")
 def generate_code_api(input_data: GenerateCodeInput):
     """
-    Main endpoint to generate code, execute it, optionally build dashboards,
-    and generate insights.
+    Endpoint to:
+    1. Generate code from user prompt via LLM.
+    2. Execute the code cell-wise.
+    3. Return execution results (stdout, errors, visualizations).
     """
     try:
         # Step 1: Generate code using LLM
@@ -19,30 +21,16 @@ def generate_code_api(input_data: GenerateCodeInput):
             input_data.dataset_url
         )
 
-        # Step 2: Execute code and capture result
+        # Step 2: Execute generated code and capture result
         result = execute_code_blocks(
             code,
             language=input_data.language,
             dataset_url=input_data.dataset_url
         )
 
-        # Step 3: Auto-generate dashboard (if requested in prompt)
-        dashboard = None
-        if "dashboard" in input_data.prompt.lower():
-            dashboard = generate_dashboard(
-                dataset_url=input_data.dataset_url,
-                language=input_data.language
-            )
-
-        # Step 4: Auto-generate insights
-        insights = generate_insights(
-            dataset_url=input_data.dataset_url
-        )
-
+        # Final Response (no dashboard/insights)
         return {
-            "blocks": result,
-            "dashboard": dashboard,  # HTML/JSON for visualization
-            "insights": insights     # Text summary
+            "blocks": result
         }
 
     except Exception as e:
@@ -54,7 +42,5 @@ def generate_code_api(input_data: GenerateCodeInput):
                     "error": str(e),
                     "visualizations": []
                 }
-            ],
-            "dashboard": None,
-            "insights": None
+            ]
         }
