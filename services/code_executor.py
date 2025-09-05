@@ -1,4 +1,3 @@
-# services/code_executor.py
 from __future__ import annotations
 
 import base64
@@ -30,9 +29,7 @@ except Exception:
 # Visualization capture helpers
 # -----------------------------
 def _capture_matplotlib_images() -> List[str]:
-    """
-    Capture all active Matplotlib/Seaborn figures as base64 strings.
-    """
+    """Capture all active Matplotlib/Seaborn figures as base64 strings."""
     images: List[str] = []
     try:
         for num in plt.get_fignums():
@@ -47,9 +44,7 @@ def _capture_matplotlib_images() -> List[str]:
 
 
 def _capture_plotly_figures(globs: Dict[str, Any]) -> List[str]:
-    """
-    Capture Plotly figures as base64 strings (requires kaleido).
-    """
+    """Capture Plotly figures as base64 strings (requires kaleido)."""
     if not _PLOTLY_AVAILABLE:
         return []
     images: List[str] = []
@@ -67,9 +62,7 @@ def _capture_plotly_figures(globs: Dict[str, Any]) -> List[str]:
 # Dataset Loader
 # -----------------------------
 def _load_dataset(dataset_url: str) -> Optional[pd.DataFrame]:
-    """
-    Load dataset from CSV, JSON, or XLSX into pandas DataFrame.
-    """
+    """Load dataset from CSV, JSON, or XLSX into pandas DataFrame."""
     if not dataset_url:
         return None
 
@@ -140,11 +133,11 @@ def execute_code_blocks(
                 # Add success messages if no explicit output
                 if not output_text:
                     if "import " in block:
-                        output_text = "✅ Libraries imported successfully"
-                    elif "read_csv" in block or "read_excel" in block or "read_json" in block:
-                        output_text = "✅ Dataset loaded successfully"
+                        output_text = "Libraries imported successfully."
+                    elif any(cmd in block for cmd in ["read_csv", "read_excel", "read_json"]):
+                        output_text = "Dataset loaded successfully."
                     else:
-                        output_text = "✅ Code executed successfully"
+                        output_text = "Code executed successfully."
 
             except Exception:
                 error_text = traceback.format_exc()
@@ -181,7 +174,7 @@ def execute_code_blocks(
                 if proc.stderr:
                     error_text = proc.stderr
                 if not output_text and not error_text:
-                    output_text = "✅ R code executed successfully"
+                    output_text = "R code executed successfully."
             except Exception:
                 error_text = traceback.format_exc()
 
@@ -223,7 +216,7 @@ def execute_code_blocks(
                 if rows:
                     output_text = str([dict(zip(col_names, row)) for row in rows])
                 else:
-                    output_text = "✅ Query executed successfully"
+                    output_text = "Query executed successfully."
             except Exception:
                 error_text = traceback.format_exc()
 
