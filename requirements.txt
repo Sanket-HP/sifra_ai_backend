@@ -1,0 +1,83 @@
+# -----------------------------------------
+# Core Data Science
+# -----------------------------------------
+numpy
+pandas
+scikit-learn
+scipy
+python-dateutil
+
+# -----------------------------------------
+# Visualization
+# -----------------------------------------
+matplotlib
+seaborn
+plotly
+kaleido
+altair
+folium
+geopandas
+dash                      # ✅ Added for interactive dashboards
+dash-bootstrap-components # ✅ Optional: nice UI components for Dash
+streamlit                 # ✅ Added if user wants Streamlit dashboards too
+
+# -----------------------------------------
+# Machine Learning / Deep Learning
+# (use tensorflow-cpu to avoid GPU issues in Azure)
+# -----------------------------------------
+tensorflow-cpu
+tensorboard
+keras
+h5py
+
+# -----------------------------------------
+# NLP
+# -----------------------------------------
+spacy
+nltk
+textblob
+openai
+llama-index
+
+# -----------------------------------------
+# SQL
+# -----------------------------------------
+sqlalchemy
+psycopg2-binary
+pymysql
+duckdb
+pandasql
+sqlite-utils
+
+# -----------------------------------------
+# Azure SDKs
+# -----------------------------------------
+azure-core
+azure-identity
+azure-storage-blob
+
+# -----------------------------------------
+# Web Frameworks / APIs
+# -----------------------------------------
+fastapi
+uvicorn                   # ✅ Explicitly added so Azure Oryx finds uvicorn
+uvicorn[standard]
+gunicorn
+requests
+aiohttp
+PyJWT
+pydantic
+python-dotenv
+aiofiles
+python-multipart
+
+# -----------------------------------------
+# Utilities
+# -----------------------------------------
+tqdm
+joblib
+pytz
+jinja2
+nbformat
+nbconvert
+ipython

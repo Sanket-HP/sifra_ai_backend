@@ -1,0 +1,45 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+*.log
+*.sqlite3
+
+# Virtual Environments
+venv/
+env/
+.venv/
+.env/
+.env.*  # like .env.dev or .env.local
+.env
+
+# VSCode
+.vscode/
+
+# macOS
+.DS_Store
+
+# Byte-compiled / optimized / DLL files
+*.py[cod]
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+
+# Azure deployments
+oryx-manifest.toml
+output.tar.gz
+
+# Zip deployment artifacts
+*.zip
+
+# System
+Thumbs.db
+ehthumbs.db
+
+# Others
+*.bak
+*.swp
