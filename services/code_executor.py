@@ -23,6 +23,7 @@ import seaborn as sns
 # Optional: Plotly
 try:
     import plotly.graph_objects as go
+    import plotly.express as px
     import plotly.io as pio
     _PLOTLY_AVAILABLE = True
 except Exception:
@@ -77,6 +78,77 @@ def _load_dataset(dataset_url: str) -> Optional[pd.DataFrame]:
             raise ValueError(f"Unsupported dataset format: {dataset_url}")
     except Exception as e:
         raise RuntimeError(f"Failed to load dataset: {e}")
+
+
+# -----------------------------
+# Extra Visualization Generator
+# -----------------------------
+def _generate_visualization_from_prompt(prompt: str, df: pd.DataFrame) -> Dict[str, Any]:
+    """Generate chart automatically if user prompt asks for visualization."""
+    images: List[str] = []
+    interactive_html: Optional[str] = None
+    plt.close("all")
+
+    if df is None or df.empty:
+        return {"images": [], "interactive_html": None}
+
+    prompt_lower = prompt.lower()
+
+    try:
+        # --- Interactive charts with Plotly ---
+        if _PLOTLY_AVAILABLE and ("interactive" in prompt_lower or "plotly" in prompt_lower):
+            if "scatter" in prompt_lower and df.shape[1] >= 2:
+                fig = px.scatter(df, x=df.columns[0], y=df.columns[1], title="Interactive Scatter Plot")
+            elif "bar" in prompt_lower:
+                fig = px.bar(df, x=df.columns[0], y=df[df.columns[1]], title="Interactive Bar Chart")
+            elif "line" in prompt_lower:
+                fig = px.line(df, x=df.columns[0], y=df[df.columns[1]], title="Interactive Line Chart")
+            elif "pie" in prompt_lower:
+                fig = px.pie(df, names=df.columns[0], title="Interactive Pie Chart")
+            else:
+                fig = px.histogram(df, x=df.columns[0], title="Interactive Histogram")
+
+            # Save as PNG preview
+            img_bytes = pio.to_image(fig, format="png")
+            images.append(base64.b64encode(img_bytes).decode("utf-8"))
+
+            # Save as HTML (for WebView usage)
+            interactive_html = pio.to_html(fig, full_html=False)
+
+        # --- Static charts with Matplotlib/Seaborn ---
+        else:
+            if "bar" in prompt_lower:
+                df.sum(numeric_only=True).plot(kind="bar", title="Bar Chart")
+                images.extend(_capture_matplotlib_images())
+
+            elif "pie" in prompt_lower:
+                df.iloc[:, 0].value_counts().plot.pie(autopct="%1.1f%%", title="Pie Chart")
+                plt.ylabel("")
+                images.extend(_capture_matplotlib_images())
+
+            elif "scatter" in prompt_lower and df.shape[1] >= 2:
+                sns.scatterplot(x=df.columns[0], y=df.columns[1], data=df)
+                plt.title("Scatter Plot")
+                images.extend(_capture_matplotlib_images())
+
+            elif "line" in prompt_lower:
+                df.plot(kind="line", title="Line Chart")
+                images.extend(_capture_matplotlib_images())
+
+            elif "heatmap" in prompt_lower:
+                sns.heatmap(df.corr(), annot=True, cmap="coolwarm")
+                plt.title("Correlation Heatmap")
+                images.extend(_capture_matplotlib_images())
+
+            elif "histogram" in prompt_lower or "distribution" in prompt_lower:
+                df.hist(figsize=(8, 6))
+                plt.suptitle("Histogram / Distribution")
+                images.extend(_capture_matplotlib_images())
+
+    except Exception:
+        pass
+
+    return {"images": images, "interactive_html": interactive_html}
 
 
 # -----------------------------
@@ -148,6 +220,7 @@ def execute_code_blocks(
     language: str = "python",
     dataset_url: Optional[str] = None,
     dataset_type: Optional[str] = None,
+    prompt: Optional[str] = None,   # ✅ NEW
 ) -> List[Dict[str, Any]]:
     results: List[Dict[str, Any]] = []
 
@@ -192,6 +265,7 @@ def execute_code_blocks(
         except Exception:
             pass
 
+        df = None
         if dataset_url:
             try:
                 df = _load_dataset(dataset_url)
@@ -205,6 +279,7 @@ def execute_code_blocks(
             stdout_buffer = io.StringIO()
             error_text, output_text = None, ""
             images: List[str] = []
+            interactive_html: Optional[str] = None
             plt.close("all")
             try:
                 with contextlib.redirect_stdout(stdout_buffer):
@@ -212,13 +287,15 @@ def execute_code_blocks(
                 images.extend(_capture_matplotlib_images())
                 images.extend(_capture_plotly_figures(exec_globals))
                 output_text = stdout_buffer.getvalue().strip()
+
+                # Table pretty formatting
                 if not output_text:
                     if "df.head" in block:
-                        output_text = str(exec_globals.get("df", pd.DataFrame()).head(10))
+                        output_text = exec_globals["df"].head(10).to_markdown()
                     elif "df.tail" in block:
-                        output_text = str(exec_globals.get("df", pd.DataFrame()).tail(10))
+                        output_text = exec_globals["df"].tail(10).to_markdown()
                     elif "df.sample" in block:
-                        output_text = str(exec_globals.get("df", pd.DataFrame()).sample(5))
+                        output_text = exec_globals["df"].sample(5).to_markdown()
                     elif "import " in block:
                         output_text = "Libraries imported successfully."
                     elif any(cmd in block for cmd in ["read_csv", "read_excel", "read_json"]):
@@ -227,7 +304,20 @@ def execute_code_blocks(
                         output_text = "Code executed successfully."
             except Exception:
                 error_text = traceback.format_exc()
-            results.append({"input": block, "output": output_text, "error": error_text, "visualizations": images})
+
+            # ✅ Generate chart from prompt if requested
+            if prompt and df is not None:
+                vis = _generate_visualization_from_prompt(prompt, df)
+                images.extend(vis["images"])
+                interactive_html = vis["interactive_html"]
+
+            results.append({
+                "input": block,
+                "output": output_text,
+                "error": error_text,
+                "visualizations": images,
+                "interactive_html": interactive_html,   # ✅ NEW
+            })
 
     # R execution
     elif language.lower() == "r":
@@ -247,6 +337,7 @@ def execute_code_blocks(
     elif language.lower() == "sql":
         conn = sqlite3.connect(":memory:")
         cursor = conn.cursor()
+        df = None
         if dataset_url:
             try:
                 df = _load_dataset(dataset_url)
@@ -259,7 +350,7 @@ def execute_code_blocks(
                 cursor.execute(block)
                 rows = cursor.fetchall()
                 col_names = [d[0] for d in cursor.description] if cursor.description else []
-                output_text = str([dict(zip(col_names, row)) for row in rows]) if rows else "Query executed successfully."
+                output_text = pd.DataFrame(rows, columns=col_names).to_markdown() if rows else "Query executed successfully."
                 results.append({"input": block, "output": output_text, "error": None, "visualizations": []})
             except Exception:
                 results.append({"input": block, "output": "", "error": traceback.format_exc(), "visualizations": []})
