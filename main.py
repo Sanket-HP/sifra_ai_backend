@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware  # <-- ADD THIS IMPORT
 from routes import generate_code, upload, run_code, dashboard, report
 import logging
 
@@ -13,6 +14,21 @@ app = FastAPI(
     version="1.0.0",
     description="Backend API for the SifraAI platform.",
 )
+
+# --- ADD THIS CORS MIDDLEWARE SECTION ---
+# This allows your frontend to communicate with your backend.
+# The "*" allows all origins, which is fine for development.
+# For production, you should restrict this to your actual frontend domain.
+origins = ["*"]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all methods (GET, POST, etc.)
+    allow_headers=["*"],  # Allows all headers
+)
+# ----------------------------------------
 
 # Root route
 @app.get("/", tags=["Root"])
